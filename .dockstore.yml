@@ -1,10 +1,53 @@
 version: 1.2
 workflows:
 
-  - name: CramToUnmappedBams
+  - name: Utilities
     subclass: WDL
-    primaryDescriptorPath: /pipelines/broad/reprocessing/cram_to_unmapped_bams/CramToUnmappedBams.wdl
+    primaryDescriptorPath: /tasks/broad/Utilities.wdl
+    
+  - name: UnmappedBamToAlignedBam
+    subclass: WDL
+    primaryDescriptorPath: /tasks/broad/UnmappedBamToAlignedBam.wdl
 
+  - name: SplitLargeReadGroup
+    subclass: WDL
+    primaryDescriptorPath: /tasks/broad/SplitLargeReadGroup.wdl
+    
+  - name: Qc
+    subclass: WDL
+    primaryDescriptorPath: /tasks/broad/Qc.wdl
+
+  - name: GermlineVariantDiscovery
+    subclass: WDL
+    primaryDescriptorPath: /tasks/broad/GermlineVariantDiscovery.wdl
+
+  - name: DragmapAlignment
+    subclass: WDL
+    primaryDescriptorPath: /tasks/broad/DragmapAlignment.wdl
+
+  - name: DragenTasks
+    subclass: WDL
+    primaryDescriptorPath: /tasks/broad/DragenTasks.wdl
+    
+  - name: BamToCram
+    subclass: WDL
+    primaryDescriptorPath: /tasks/broad/BamToCram.wdl
+    
+  - name: BamProcessing
+    subclass: WDL
+    primaryDescriptorPath: /tasks/broad/BamProcessing.wdl
+    
+  - name: Alignment
+    subclass: WDL
+    primaryDescriptorPath: /tasks/broad/Alignment.wdl
+  - name: AggregatedBamQC
+    subclass: WDL
+    primaryDescriptorPath: /tasks/broad/AggregatedBamQC.wdl
+    
+  - name: DNASeqStructs
+    subclass: WDL
+    primaryDescriptorPath: /structs/dna_seq/DNASeqStructs.wdl 
+    
   - name: VariantCalling
     subclass: WDL
     primaryDescriptorPath: /pipelines/broad/dna_seq/germline/variant_calling/VariantCalling.wdl
