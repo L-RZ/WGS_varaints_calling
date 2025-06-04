@@ -134,19 +134,19 @@ workflow ExomeGermlineSingleSample {
       fingerprint_genotypes_index = fingerprint_genotypes_index,
       papi_settings = papi_settings
   }
-'''
-  call ToCram.BamToCram as BamToCram {
-    input:
-      input_bam = UnmappedBamToAlignedBam.output_bam,
-      ref_fasta = references.reference_fasta.ref_fasta,
-      ref_fasta_index = references.reference_fasta.ref_fasta_index,
-      ref_dict = references.reference_fasta.ref_dict,
-      duplication_metrics = UnmappedBamToAlignedBam.duplicate_metrics,
-      chimerism_metrics = AggregatedBamQC.agg_alignment_summary_metrics,
-      base_file_name = sample_and_unmapped_bams.base_file_name,
-      agg_preemptible_tries = papi_settings.agg_preemptible_tries
-  }
-'''
+# 
+#   call ToCram.BamToCram as BamToCram {
+#     input:
+#       input_bam = UnmappedBamToAlignedBam.output_bam,
+#       ref_fasta = references.reference_fasta.ref_fasta,
+#       ref_fasta_index = references.reference_fasta.ref_fasta_index,
+#       ref_dict = references.reference_fasta.ref_dict,
+#       duplication_metrics = UnmappedBamToAlignedBam.duplicate_metrics,
+#       chimerism_metrics = AggregatedBamQC.agg_alignment_summary_metrics,
+#       base_file_name = sample_and_unmapped_bams.base_file_name,
+#       agg_preemptible_tries = papi_settings.agg_preemptible_tries
+#   }
+# 
   call ToGvcf.VariantCalling as BamToGvcf {
     input:
       calling_interval_list = references.calling_interval_list,
@@ -187,19 +187,19 @@ workflow ExomeGermlineSingleSample {
 
   # Outputs that will be retained when execution is complete
   output {
-    '''
-    # SKIP
-    Array[File] quality_yield_metrics = UnmappedBamToAlignedBam.quality_yield_metrics
+    # 
+    # # SKIP
+    # Array[File] quality_yield_metrics = UnmappedBamToAlignedBam.quality_yield_metrics
 
-    Array[File] unsorted_read_group_base_distribution_by_cycle_pdf = UnmappedBamToAlignedBam.unsorted_read_group_base_distribution_by_cycle_pdf
-    Array[File] unsorted_read_group_base_distribution_by_cycle_metrics = UnmappedBamToAlignedBam.unsorted_read_group_base_distribution_by_cycle_metrics
-    Array[File] unsorted_read_group_insert_size_histogram_pdf = UnmappedBamToAlignedBam.unsorted_read_group_insert_size_histogram_pdf
-    Array[File] unsorted_read_group_insert_size_metrics = UnmappedBamToAlignedBam.unsorted_read_group_insert_size_metrics
-    Array[File] unsorted_read_group_quality_by_cycle_pdf = UnmappedBamToAlignedBam.unsorted_read_group_quality_by_cycle_pdf
-    Array[File] unsorted_read_group_quality_by_cycle_metrics = UnmappedBamToAlignedBam.unsorted_read_group_quality_by_cycle_metrics
-    Array[File] unsorted_read_group_quality_distribution_pdf = UnmappedBamToAlignedBam.unsorted_read_group_quality_distribution_pdf
-    Array[File] unsorted_read_group_quality_distribution_metrics = UnmappedBamToAlignedBam.unsorted_read_group_quality_distribution_metrics
-    '''
+    # Array[File] unsorted_read_group_base_distribution_by_cycle_pdf = UnmappedBamToAlignedBam.unsorted_read_group_base_distribution_by_cycle_pdf
+    # Array[File] unsorted_read_group_base_distribution_by_cycle_metrics = UnmappedBamToAlignedBam.unsorted_read_group_base_distribution_by_cycle_metrics
+    # Array[File] unsorted_read_group_insert_size_histogram_pdf = UnmappedBamToAlignedBam.unsorted_read_group_insert_size_histogram_pdf
+    # Array[File] unsorted_read_group_insert_size_metrics = UnmappedBamToAlignedBam.unsorted_read_group_insert_size_metrics
+    # Array[File] unsorted_read_group_quality_by_cycle_pdf = UnmappedBamToAlignedBam.unsorted_read_group_quality_by_cycle_pdf
+    # Array[File] unsorted_read_group_quality_by_cycle_metrics = UnmappedBamToAlignedBam.unsorted_read_group_quality_by_cycle_metrics
+    # Array[File] unsorted_read_group_quality_distribution_pdf = UnmappedBamToAlignedBam.unsorted_read_group_quality_distribution_pdf
+    # Array[File] unsorted_read_group_quality_distribution_metrics = UnmappedBamToAlignedBam.unsorted_read_group_quality_distribution_metrics
+    # 
 
     File read_group_alignment_summary_metrics = AggregatedBamQC.read_group_alignment_summary_metrics
 
@@ -234,13 +234,13 @@ workflow ExomeGermlineSingleSample {
 
     File? output_bam = provided_output_bam
     File? output_bam_index = provided_output_bam_index
-'''
-    File output_cram = BamToCram.output_cram
-    File output_cram_index = BamToCram.output_cram_index
-    File output_cram_md5 = BamToCram.output_cram_md5
+# 
+#     File output_cram = BamToCram.output_cram
+#     File output_cram_index = BamToCram.output_cram_index
+#     File output_cram_md5 = BamToCram.output_cram_md5
 
-    # File validate_cram_file_report = BamToCram.validate_cram_file_report
-'''
+#     # File validate_cram_file_report = BamToCram.validate_cram_file_report
+# 
     File output_vcf = BamToGvcf.output_vcf
     File output_vcf_index = BamToGvcf.output_vcf_index
   }
