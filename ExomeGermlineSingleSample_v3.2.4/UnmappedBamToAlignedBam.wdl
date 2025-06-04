@@ -154,8 +154,8 @@ workflow UnmappedBamToAlignedBam {
       call utils.ConvertToBam as ConvertToBam {
         input:
           input_cram = in_file,
-          ref_fasta = references.reference_fasta
-          ref_fasta_index = references.reference_fasta.ref_fasta_index
+          ref_fasta = references.reference_fasta,
+          ref_fasta_index = references.reference_fasta.ref_fasta_index,
           output_basename = sample_and_unmapped_bams.base_file_name
     }
     File output_aligned_bam = ConvertToBam.output_bam
