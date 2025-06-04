@@ -151,7 +151,7 @@ workflow UnmappedBamToAlignedBam {
   Boolean is_cram = sub(basename(in_bam), ".*\\.", "") == "cram"
 #  String sample_basename = if is_cram then  basename(in_bam, ".cram") else basename(in_bam, ".bam")
   if ( is_cram ) {
-      call utils.ConvertToBam as ConvertToBam {
+      call Utils.ConvertToBam as ConvertToBam {
         input:
           input_cram = in_file,
           ref_fasta = references.reference_fasta,
