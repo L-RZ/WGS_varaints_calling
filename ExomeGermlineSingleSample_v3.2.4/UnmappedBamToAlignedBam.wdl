@@ -159,11 +159,9 @@ workflow UnmappedBamToAlignedBam {
           ref_fasta_index = references.reference_fasta.ref_fasta_index,
           output_basename = unmapped_bam_basename.base_file_name
       }
-      File output_aligned_bam = ConvertToBam.output_bam
     }
-    if ( !is_cram ) {
-      File output_aligned_bam = unmapped_bam
-    }
+
+    File output_aligned_bam = select_first([ConvertToBam.output_bam, unmapped_bam])
   }
 
 
