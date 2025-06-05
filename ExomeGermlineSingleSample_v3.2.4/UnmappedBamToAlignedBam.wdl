@@ -147,23 +147,22 @@ workflow UnmappedBamToAlignedBam {
 
     String unmapped_bam_basename = basename(unmapped_bam, sample_and_unmapped_bams.unmapped_bam_suffix)
 
-    File in_bam = sample_and_unmapped_bams.flowcell_unmapped_bams[0]
+    # File in_bam = sample_and_unmapped_bams.flowcell_unmapped_bams[0]
     
-
-    Boolean is_cram = sub(basename(in_bam), ".*\\.", "") == "cram"
+    Boolean is_cram = sub(basename(unmapped_bam), ".*\\.", "") == "cram"
   #  String sample_basename = if is_cram then  basename(in_bam, ".cram") else basename(in_bam, ".bam")
     if ( is_cram ) {
       call Utils.ConvertToBam as ConvertToBam {
         input:
-          input_cram = in_bam,
+          input_cram = unmapped_bam,
           ref_fasta = references.reference_fasta.ref_fasta,
           ref_fasta_index = references.reference_fasta.ref_fasta_index,
-          output_basename = sample_and_unmapped_bams.base_file_name
+          output_basename = unmapped_bam_basename.base_file_name
       }
       File output_aligned_bam = ConvertToBam.output_bam
     }
     if ( !is_cram ) {
-      File output_aligned_bam = in_bam
+      File output_aligned_bam = unmapped_bam
     }
   }
 
