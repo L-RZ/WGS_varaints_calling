@@ -3,7 +3,10 @@
 
 Change:\
 Using the mapped bam or cram as input \
-Removing mapping steps 
+Removing mapping steps \
+Removing QC results on input mapped bam or cram \
+Removing  output cram result \
+Removing fingerprint check
 
 ### Announcing a new site for WARP documentation!
 Exome Germline Single Sample documentation has moved! Read more about the [Exome Germline Single Sample Pipeline](https://broadinstitute.github.io/warp/docs/Pipelines/Exome_Germline_Single_Sample_Pipeline/README) on the new [WARP documentation site](https://broadinstitute.github.io/warp/)!
