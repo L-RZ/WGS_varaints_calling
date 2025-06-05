@@ -143,23 +143,28 @@ workflow UnmappedBamToAlignedBam {
   ##########################################
   # input the mapped bam or cram and skip mapping 
   ##########################################
+  scatter (unmapped_bam in sample_and_unmapped_bams.flowcell_unmapped_bams) {
 
+    String unmapped_bam_basename = basename(unmapped_bam, sample_and_unmapped_bams.unmapped_bam_suffix)
 
-  File in_bam = sample_and_unmapped_bams.flowcell_unmapped_bams[0]
-  File output_aligned_bam = in_bam
+    File in_bam = sample_and_unmapped_bams.flowcell_unmapped_bams[0]
+    
 
-  Boolean is_cram = sub(basename(in_bam), ".*\\.", "") == "cram"
-#  String sample_basename = if is_cram then  basename(in_bam, ".cram") else basename(in_bam, ".bam")
-  if ( is_cram ) {
+    Boolean is_cram = sub(basename(in_bam), ".*\\.", "") == "cram"
+  #  String sample_basename = if is_cram then  basename(in_bam, ".cram") else basename(in_bam, ".bam")
+    if ( is_cram ) {
       call Utils.ConvertToBam as ConvertToBam {
         input:
           input_cram = in_bam,
           ref_fasta = references.reference_fasta.ref_fasta,
           ref_fasta_index = references.reference_fasta.ref_fasta_index,
           output_basename = sample_and_unmapped_bams.base_file_name
+      }
+      File output_aligned_bam = ConvertToBam.output_bam
     }
-    File output_aligned_bam = ConvertToBam.output_bam
-    File output_aligned_bam_index = ConvertToBam.output_bam_index
+    if ( !is_cram ) {
+      File output_aligned_bam = in_bam
+    }
   }
 
 
@@ -182,7 +187,7 @@ workflow UnmappedBamToAlignedBam {
   }
 
   # Sort aggregated+deduped BAM file and fix tags
-  call Processing.SortSam as SortSampleBam {
+call Processing.SortSam as SortSampleBam {
     input:
       input_bam = MarkDuplicates.output_bam,
       output_bam_basename = sample_and_unmapped_bams.base_file_name + ".aligned.duplicate_marked.sorted",
