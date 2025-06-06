@@ -172,7 +172,8 @@ task ConvertToBam {
     set -e
     set -o pipefail
 
-    samtools view -@ 4 -b -h -o ~{output_basename}.bam -T ~{ref_fasta} ~{input_cram}
+    samtools view -@ 4  -h -T ~{ref_fasta} ~{input_cram} | 
+    samtools view -@ 4 -o ~{output_basename}.bam -
 
     samtools index ~{output_basename}.bam
   >>>
@@ -188,6 +189,30 @@ task ConvertToBam {
     File output_bam_index = "~{output_basename}.bam.bai"
   }
 }
+
+# make bam index
+task BamIndex {
+  input {
+    File input_bam 
+  }
+  command <<<
+    set -e
+    set -o pipefail
+    samtools index ~{input_bam}
+  >>>
+  output {
+    File output_bam = "~{input_bam}"
+    File output_bam_index = "~{input_bam}.bai"
+  }
+  runtime {
+    docker: "us.gcr.io/broad-gotc-prod/samtools:1.0.0-1.11-1624651616"
+    preemptible: 3
+    memory: "2 GiB"
+    cpu: "1"
+    disks: "local-disk 200 HDD"
+  }
+}
+
 
 # Calculates sum of a list of floats
 task SumFloats {

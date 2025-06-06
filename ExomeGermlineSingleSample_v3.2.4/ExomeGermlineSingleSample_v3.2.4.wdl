@@ -8,6 +8,9 @@ version 1.0
 # SortSam cpu: 4
 # MarkDuplicates:  ASSUME_SORT_ORDER="coordinate"
 
+# add a option to use input directly call SNP without dup and sort
+
+
 
 ## Copyright Broad Institute, 2018
 ##

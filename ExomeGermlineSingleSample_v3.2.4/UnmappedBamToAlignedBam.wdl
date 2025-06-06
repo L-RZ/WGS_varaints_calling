@@ -48,6 +48,7 @@ workflow UnmappedBamToAlignedBam {
     Boolean perform_bqsr = true
     Boolean use_bwa_mem = true
     Boolean allow_empty_ref_alt = false
+    Boolean run_dup_sort
   }
 
   Float cutoff_for_large_rg_in_gb = 20.0
@@ -161,8 +162,8 @@ workflow UnmappedBamToAlignedBam {
       }
     }
     File output_aligned_bam = select_first([ConvertToBam.output_bam, unmapped_bam])
+    File output_aligned_bam_index = ConvertToBam.output_bam_index
   }
-
 
 
   # MarkDuplicates and SortSam currently take too long for preemptibles if the input data is too large
@@ -172,26 +173,30 @@ workflow UnmappedBamToAlignedBam {
   # Aggregate aligned+merged flowcell BAM files and mark duplicates
   # We take advantage of the tool's ability to take multiple BAM inputs and write out a single output
   # to avoid having to spend time just merging BAM files.
-  call Processing.MarkDuplicates as MarkDuplicates {
-    input:
-      input_bams = output_aligned_bam,
-      output_bam_basename = sample_and_unmapped_bams.base_file_name + ".aligned.unsorted.duplicates_marked",
-      metrics_filename = sample_and_unmapped_bams.base_file_name + ".duplicate_metrics",
-      total_input_size = size(output_aligned_bam, "GiB"),
-      compression_level = compression_level,
-      preemptible_tries = if data_too_large_for_preemptibles then 0 else papi_settings.agg_preemptible_tries
-  }
 
-  # Sort aggregated+deduped BAM file and fix tags
-call Processing.SortSam as SortSampleBam {
-    input:
-      input_bam = MarkDuplicates.output_bam,
-      output_bam_basename = sample_and_unmapped_bams.base_file_name + ".aligned.duplicate_marked.sorted",
-      compression_level = compression_level,
-      preemptible_tries = if data_too_large_for_preemptibles then 0 else papi_settings.agg_preemptible_tries
-  }
+  if (run_dup_sort) {
+    call Processing.MarkDuplicates as MarkDuplicates {
+      input:
+        input_bams = output_aligned_bam,
+        output_bam_basename = sample_and_unmapped_bams.base_file_name + ".aligned.unsorted.duplicates_marked",
+        metrics_filename = sample_and_unmapped_bams.base_file_name + ".duplicate_metrics",
+        total_input_size = size(output_aligned_bam, "GiB"),
+        compression_level = compression_level,
+        preemptible_tries = if data_too_large_for_preemptibles then 0 else papi_settings.agg_preemptible_tries
+    }
 
-  Float agg_bam_size = size(SortSampleBam.output_bam, "GiB")
+    # Sort aggregated+deduped BAM file and fix tags
+    call Processing.SortSam as SortSampleBam {
+      input:
+        input_bam = MarkDuplicates.output_bam,
+        output_bam_basename = sample_and_unmapped_bams.base_file_name + ".aligned.duplicate_marked.sorted",
+        compression_level = compression_level,
+        preemptible_tries = if data_too_large_for_preemptibles then 0 else papi_settings.agg_preemptible_tries
+    }
+  }
+  File dup_sort_bam  = select_first([SortSampleBam.output_bam, output_aligned_bam])
+  File dup_sort_bam_index = select_first([SortSampleBam.output_bam_index, output_aligned_bam_index])
+  Float agg_bam_size = size(dup_sort_bam, "GiB")
 
   # if (defined(haplotype_database_file)) {
   #   # Check identity of fingerprints across readgroups
@@ -218,8 +223,8 @@ call Processing.SortSam as SortSampleBam {
   # Estimate level of cross-sample contamination
   call Processing.CheckContamination as CheckContamination {
     input:
-      input_bam = SortSampleBam.output_bam,
-      input_bam_index = SortSampleBam.output_bam_index,
+      input_bam = dup_sort_bam,
+      input_bam_index = dup_sort_bam_index,
       contamination_sites_ud = contamination_sites_ud,
       contamination_sites_bed = contamination_sites_bed,
       contamination_sites_mu = contamination_sites_mu,
@@ -244,8 +249,8 @@ call Processing.SortSam as SortSampleBam {
       # Generate the recalibration model by interval
       call Processing.BaseRecalibrator as BaseRecalibrator {
         input:
-          input_bam = SortSampleBam.output_bam,
-          input_bam_index = SortSampleBam.output_bam_index,
+          input_bam = dup_sort_bam,
+          input_bam_index = dup_sort_bam_index,
           recalibration_report_filename = sample_and_unmapped_bams.base_file_name + ".recal_data.csv",
           sequence_group_interval = subgroup,
           dbsnp_vcf = references.dbsnp_vcf,
@@ -273,8 +278,8 @@ call Processing.SortSam as SortSampleBam {
       # Apply the recalibration model by interval
       call Processing.ApplyBQSR as ApplyBQSR {
         input:
-          input_bam = SortSampleBam.output_bam,
-          input_bam_index = SortSampleBam.output_bam_index,
+          input_bam = dup_sort_bam,
+          input_bam_index = dup_sort_bam_index,
           output_bam_basename = recalibrated_bam_basename,
           recalibration_report = GatherBqsrReports.output_bqsr_report,
           sequence_group_interval = subgroup,
@@ -293,7 +298,7 @@ call Processing.SortSam as SortSampleBam {
   # Merge the recalibrated BAM files resulting from by-interval recalibration
   call Processing.GatherSortedBamFiles as GatherBamFiles {
     input:
-      input_bams = select_first([ApplyBQSR.recalibrated_bam, [SortSampleBam.output_bam]]),
+      input_bams = select_first([ApplyBQSR.recalibrated_bam, [dup_sort_bam]]),
       output_bam_basename = sample_and_unmapped_bams.base_file_name,
       total_input_size = agg_bam_size,
       compression_level = compression_level,
@@ -322,7 +327,7 @@ call Processing.SortSam as SortSampleBam {
     File selfSM = CheckContamination.selfSM
     Float contamination = CheckContamination.contamination
 
-    File duplicate_metrics = MarkDuplicates.duplicate_metrics
+    File? duplicate_metrics = MarkDuplicates.duplicate_metrics
     File? output_bqsr_reports = GatherBqsrReports.output_bqsr_report
 
     File output_bam = GatherBamFiles.output_bam
