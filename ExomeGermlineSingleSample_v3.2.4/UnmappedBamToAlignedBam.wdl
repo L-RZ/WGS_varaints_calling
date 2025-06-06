@@ -162,7 +162,7 @@ workflow UnmappedBamToAlignedBam {
       }
     }
     File output_aligned_bam = select_first([ConvertToBam.output_bam, unmapped_bam])
-    File output_aligned_bam_index = ConvertToBam.output_bam_index
+    File output_aligned_bam_index = select_first([ConvertToBam.output_bam_index])
   }
 
 
