@@ -4,7 +4,9 @@ version 1.0
 # skip mapping
 # input mapped.cram or mapped.bam 
 
-
+# cram_to_bam # change: cpu: 4 
+# SortSam cpu: 4
+# MarkDuplicates:  ASSUME_SORT_ORDER="coordinate"
 
 
 ## Copyright Broad Institute, 2018
@@ -188,6 +190,7 @@ workflow ExomeGermlineSingleSample {
   # Outputs that will be retained when execution is complete
   output {
     # 
+    
     # # SKIP
     # Array[File] quality_yield_metrics = UnmappedBamToAlignedBam.quality_yield_metrics
 

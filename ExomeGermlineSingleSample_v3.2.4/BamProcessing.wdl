@@ -50,7 +50,7 @@ task SortSam {
   runtime {
     docker: docker
     disks: "local-disk " + disk_size + " HDD"
-    cpu: "1"
+    cpu: "2"
     memory: "${machine_mem_mb} MiB"
     preemptible: preemptible_tries
   }
@@ -104,7 +104,8 @@ task MarkDuplicates {
       ~{"READ_NAME_REGEX=" + read_name_regex} \
       ~{"SORTING_COLLECTION_SIZE_RATIO=" + sorting_collection_size_ratio} \
       OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 \
-      ASSUME_SORT_ORDER="queryname" \
+#      ASSUME_SORT_ORDER="queryname" \
+      ASSUME_SORT_ORDER="coordinate" \
       CLEAR_DT="false" \
       ADD_PG_TAG_TO_READS=false
   }
