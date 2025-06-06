@@ -1,4 +1,3 @@
-WGS variants calling 
-WES variants calling
-
+WGS variants calling \
+WES variants calling \
 dragen + GATK
