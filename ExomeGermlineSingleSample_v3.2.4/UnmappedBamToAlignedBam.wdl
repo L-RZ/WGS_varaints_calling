@@ -161,8 +161,8 @@ workflow UnmappedBamToAlignedBam {
           output_basename = unmapped_bam_basename
       }
     }
-    File output_aligned_bam = select_first([ConvertToBam.output_bam, unmapped_bam])
-    File output_aligned_bam_index = select_first([ConvertToBam.output_bam_index])
+    File output_aligned_bam = select_first([ConvertToBam.output_bam, unmapped_bam]) # array of bam file 
+    File output_aligned_bam_index = select_first([ConvertToBam.output_bam_index])   # array of bai file
   }
 
 
@@ -194,8 +194,8 @@ workflow UnmappedBamToAlignedBam {
         preemptible_tries = if data_too_large_for_preemptibles then 0 else papi_settings.agg_preemptible_tries
     }
   }
-  File dup_sort_bam  = select_first([SortSampleBam.output_bam, output_aligned_bam])
-  File dup_sort_bam_index = select_first([SortSampleBam.output_bam_index, output_aligned_bam_index])
+  File dup_sort_bam  = select_first([SortSampleBam.output_bam, output_aligned_bam[0]])
+  File dup_sort_bam_index = select_first([SortSampleBam.output_bam_index, output_aligned_bam_index[0]])
   Float agg_bam_size = size(dup_sort_bam, "GiB")
 
   # if (defined(haplotype_database_file)) {
