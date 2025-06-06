@@ -172,15 +172,15 @@ task ConvertToBam {
     set -e
     set -o pipefail
 
-    samtools view -@ 4 -b -h -o ~{output_basename}.bam -T ~{ref_fasta} ~{input_cram}
+    samtools view -b -h -o ~{output_basename}.bam -T ~{ref_fasta} ~{input_cram}
 
     samtools index ~{output_basename}.bam
   >>>
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/samtools:1.0.0-1.11-1624651616"
     preemptible: 3
-    memory: "8 GiB"
-    cpu: "4"
+    memory: "3 GiB"
+    cpu: "1"
     disks: "local-disk 200 HDD"
   }
   output {
